@@ -66,18 +66,13 @@ class LogStash::Filters::Referer < LogStash::Filters::Base
     s = @searchEnginesIndex[host]
     return s if s
     n = host.split '.'
-    if ['com', 'org', 'net', 'co', 'it', 'edu'].index n[-2]
-      s = @searchEnginesIndexPrefix[n.slice(0..-3).join '.']
-    else
-      s = @searchEnginesIndexPrefix[n.slice(0..-2).join '.']
-    end
+    s = %w[com org net co it edu].include?(n[-2]) ?
+      @searchEnginesIndexPrefix[n.slice(0..-3).join '.'] :
+      @searchEnginesIndexPrefix[n.slice(0..-2).join '.']
     return s if s
-    if ['com', 'org', 'net', 'co', 'it', 'edu'].index n[0]
-      s = @searchEnginesIndexSufix[n.slice(2..-1).join '.']
-    else
-      s = @searchEnginesIndexSufix[n.slice(1..-1).join '.']
-    end
-    s
+    %w[com org net co it edu].include?(n[0]) ?
+      @searchEnginesIndexSufix[n.slice(2..-1).join '.'] :
+      @searchEnginesIndexSufix[n.slice(1..-1).join '.']
   end
 
   public
