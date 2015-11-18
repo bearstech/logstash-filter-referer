@@ -42,18 +42,17 @@ class LogStash::Filters::Referer < LogStash::Filters::Base
     @searchEngines = YAML.load(File.open(path, 'r').read)
     @searchEngines.each do |key, engines|
       engines.each do |engine|
-        urls = engine['urls']
-        if urls
+        if urls = engine['urls']
           urls.each_with_index do |url, index|
             if url.end_with? '.{}'
               @searchEnginesIndexPrefix[url.slice 0..-4] = [key, index]
-            else
-              if url.start_with? '{}.'
-                @searchEnginesIndexSufix[url.slice 3..-1] = [key, index]
-              else
-                @searchEnginesIndex[url] = [key, index]
-              end
+              next
             end
+            if url.start_with? '{}.'
+              @searchEnginesIndexSufix[url.slice 3..-1] = [key, index]
+              next
+            end
+            @searchEnginesIndex[url] = [key, index]
           end
         end
       end
