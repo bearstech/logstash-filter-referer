@@ -35,21 +35,66 @@ class LogStash::Filters::Referer < LogStash::Filters::Base
         @social[value] = key
       end
     end
+    path = ::File.expand_path('../../../vendor/SearchEngines.yml', ::File.dirname(__FILE__))
+    @searchEnginesIndex = Hash.new
+    @searchEnginesIndexPrefix = Hash.new
+    @searchEnginesIndexSufix = Hash.new
+    @searchEngines = YAML.load(File.open(path, 'r').read)
+    @searchEngines.each do |key, engines|
+      engines.each do |engine|
+        urls = engine['urls']
+        if urls
+          urls.each_with_index do |url, index|
+            if url.end_with? '.{}'
+              @searchEnginesIndexPrefix[url.slice 0..-4] = [key, index]
+            else
+              if url.start_with? '{}.'
+                @searchEnginesIndexSufix[url.slice 3..-1] = [key, index]
+              else
+                @searchEnginesIndex[url] = [key, index]
+              end
+            end
+          end
+        end
+      end
+    end
 
   end # def register
 
   public
   def filter(event)
-
     ref = event[@source]
     if ref != "-"
       ref = URI(ref)
-      soc = @social[ref.host]
+      host = ref.host
+      host = host.slice(4..-1) if host.start_with? 'www.'
+      soc = @social[host]
       if soc
         event["social"] = soc
+      else
+        s = @searchEnginesIndex[host]
+        if ! s
+          n = host.split '.'
+          if ['com', 'org', 'net', 'co', 'it', 'edu'].index n[-2]
+            s = @searchEnginesIndexPrefix[n.slice(0..-3).join '.']
+          else
+            s = @searchEnginesIndexPrefix[n.slice(0..-2).join '.']
+          end
+          if ! s
+            if ['com', 'org', 'net', 'co', 'it', 'edu'].index n[0]
+              s = @searchEnginesIndexSufix[n.slice(2..-1).join '.']
+            else
+              s = @searchEnginesIndexSufix[n.slice(1..-1).join '.']
+            end
+          end
+        end
+        if s
+          name, index = s
+          engine = @searchEngines[name][index]
+          event["searchengine"] = name
+        end
       end
     end
-
     # filter_matched should go in the last line of our successful code
     filter_matched(event)
   end # def filter

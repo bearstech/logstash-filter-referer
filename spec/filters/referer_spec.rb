@@ -17,5 +17,13 @@ describe LogStash::Filters::Referer do
       expect(subject).to include("social")
       expect(subject['social']).to eq('Twitter')
     end
+    sample("referer" => "https://ecosia.org/search?q=carotte") do
+      expect(subject).to include("searchengine")
+      expect(subject['searchengine']).to eq('Ecosia')
+    end
+    sample("referer" => "https://www.google.co.uk/search?q=carotte") do
+      expect(subject).to include("searchengine")
+      expect(subject['searchengine']).to eq('Google')
+    end
   end
 end
