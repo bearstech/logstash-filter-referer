@@ -61,6 +61,25 @@ class LogStash::Filters::Referer < LogStash::Filters::Base
 
   end # def register
 
+  private
+  def index(host)
+    s = @searchEnginesIndex[host]
+    return s if s
+    n = host.split '.'
+    if ['com', 'org', 'net', 'co', 'it', 'edu'].index n[-2]
+      s = @searchEnginesIndexPrefix[n.slice(0..-3).join '.']
+    else
+      s = @searchEnginesIndexPrefix[n.slice(0..-2).join '.']
+    end
+    return s if s
+    if ['com', 'org', 'net', 'co', 'it', 'edu'].index n[0]
+      s = @searchEnginesIndexSufix[n.slice(2..-1).join '.']
+    else
+      s = @searchEnginesIndexSufix[n.slice(1..-1).join '.']
+    end
+    s
+  end
+
   public
   def filter(event)
     ref = event[@source]
@@ -68,27 +87,10 @@ class LogStash::Filters::Referer < LogStash::Filters::Base
       ref = URI(ref)
       host = ref.host
       host = host.slice(4..-1) if host.start_with? 'www.'
-      soc = @social[host]
-      if soc
+      if soc = @social[host]
         event["social"] = soc
       else
-        s = @searchEnginesIndex[host]
-        if ! s
-          n = host.split '.'
-          if ['com', 'org', 'net', 'co', 'it', 'edu'].index n[-2]
-            s = @searchEnginesIndexPrefix[n.slice(0..-3).join '.']
-          else
-            s = @searchEnginesIndexPrefix[n.slice(0..-2).join '.']
-          end
-          if ! s
-            if ['com', 'org', 'net', 'co', 'it', 'edu'].index n[0]
-              s = @searchEnginesIndexSufix[n.slice(2..-1).join '.']
-            else
-              s = @searchEnginesIndexSufix[n.slice(1..-1).join '.']
-            end
-          end
-        end
-        if s
+        if s = index(host)
           name, index = s
           engine = @searchEngines[name][index]
           event["searchengine"] = name
