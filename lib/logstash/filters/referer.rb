@@ -24,6 +24,7 @@ class LogStash::Filters::Referer < LogStash::Filters::Base
   config_name "referer"
 
   config :source, :validate => :string, :required => true
+  config :target, :validate => :string, :default => 'referer'
 
   public
   def register
@@ -77,16 +78,17 @@ class LogStash::Filters::Referer < LogStash::Filters::Base
   public
   def filter(event)
     ref = event[@source]
+    event[@target] = {"raw" => ref }
     if ref != "-"
       ref = URI(ref)
       host = ref.host
       host = host.slice(4..-1) if host.start_with? 'www.'
       if soc = @social[host]
-        event["social"] = soc
+        event[@target]["social"] = {"raw" => soc}
       else
         if s = index(host)
           name, index = s
-          event["searchengine"] = name
+          event[@target]["searchengine"] = {"name" => {"raw" => name}}
           engine = @searchEngines[name][index - 1]
           query = Hash[URI::decode_www_form(ref.query)] if ref.query
           engine["params"].each do |param|
@@ -97,7 +99,7 @@ class LogStash::Filters::Referer < LogStash::Filters::Base
               p = query[param] if query
             end
             if p
-              event["query"] = p
+              event[@target]["searchengine"]["query"] = {"raw" => p}
               break
             end
           end
