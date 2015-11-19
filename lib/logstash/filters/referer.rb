@@ -86,8 +86,21 @@ class LogStash::Filters::Referer < LogStash::Filters::Base
       else
         if s = index(host)
           name, index = s
-          engine = @searchEngines[name][index]
           event["searchengine"] = name
+          engine = @searchEngines[name][index - 1]
+          query = Hash[URI::decode_www_form(ref.query)] if ref.query
+          engine["params"].each do |param|
+            if param.start_with? '/'
+              m = Regexp.new(param.slice(1..-2)).match(ref.path)
+              p = m[1] if m
+            else
+              p = query[param] if query
+            end
+            if p
+              event["query"] = p
+              break
+            end
+          end
         end
       end
     end
