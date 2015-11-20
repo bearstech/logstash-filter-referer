@@ -1,11 +1,15 @@
-# Logstash Plugin
-
-[![Build
-Status](http://build-eu-00.elastic.co/view/LS%20Plugins/view/LS%20Filters/job/logstash-plugin-filter-example-unit/badge/icon)](http://build-eu-00.elastic.co/view/LS%20Plugins/view/LS%20Filters/job/logstash-plugin-filter-example-unit/)
+# Logstash Referer Plugin
 
 This is a plugin for [Logstash](https://github.com/elastic/logstash).
 
-It is fully free and fully open source. The license is Apache 2.0, meaning you are pretty much free to use it however you want in whatever way.
+This plugin uses [Piwik](http://piwik.org) raw data to parse the "referer"
+field from http logs. It extracts social web site and searchengine (and the query used).
+
+The used data are YAML, from this sub project : [Piwik Searchengine and social list](https://github.com/piwik/searchengine-and-social-list)
+
+The plugin uses multiple index (plain, prefix, suffix), for limiting violence.
+
+The license is Apache 2.0, © 2015 Mathieu Lecarme for Bearstech, the data are GPL v3, © Piwik.
 
 ## Documentation
 
