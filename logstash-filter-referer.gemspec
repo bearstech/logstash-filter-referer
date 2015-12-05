@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
   s.name = 'logstash-filter-referer'
-  s.version = '0.1'
+  s.version = '0.2'
   s.licenses = ['Apache License (2.0)']
-  s.summary = "Build information about referer"
+  s.summary = "Logstash plugin for getting information from http referer"
   s.description = ""
   s.authors = ["athoune"]
   s.email = 'mathieu@garambrogne.net'
@@ -10,8 +10,9 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   # Files
-  s.files = Dir['lib/**/*','spec/**/*','vendor/**/*','*.gemspec','*.md','CONTRIBUTORS','Gemfile','LICENSE','NOTICE.TXT']
-   # Tests
+  s.files = Dir['lib/**/*','spec/**/*','vendor/**/*','*.gemspec','*.md',
+                'CONTRIBUTORS','Gemfile','LICENSE','NOTICE.TXT']
+  # Tests
   s.test_files = s.files.grep(%r{^(test|spec|features)/})
 
   # Special flag to let us know this is actually a logstash plugin
