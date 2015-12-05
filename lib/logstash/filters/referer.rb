@@ -4,31 +4,33 @@ require "logstash/namespace"
 require "yaml"
 require "uri"
 
-# https://github.com/piwik/searchengine-and-social-list
-
-# This example filter will replace the contents of the default
-# message field with whatever you specify in the configuration.
+# Referer plugin get information from the referer field in http logs.
+# This plugin can tell if a website is "social" or "search engine".
+# For Search engine, the query is extracted.
 #
-# It is only intended to be used as an example.
+# Patterns came from the Piwik project :
+# see <https://github.com/piwik/searchengine-and-social-list>
 class LogStash::Filters::Referer < LogStash::Filters::Base
 
   # Setting the config_name here is required. This is how you
   # configure this filter from your Logstash config.
   #
   # filter {
-  #   example {
-  #     message => "My message..."
+  #   referer {
+  #     source => "referer"
   #   }
   # }
   #
-  config_name "referer"
+  config_name 'referer'
 
+  # The field containing the referer url
   config :source, :validate => :string, :required => true
+
+  # Specify the field into which Logstash should store the referer data.
   config :target, :validate => :string, :default => 'referer'
 
   public
   def register
-    # Add instance variables
     path = ::File.expand_path('../../../vendor/Socials.yml', ::File.dirname(__FILE__))
     @social = Hash.new
     YAML.load(File.open(path, 'r').read).each do |key, values|
@@ -109,4 +111,4 @@ class LogStash::Filters::Referer < LogStash::Filters::Base
     # filter_matched should go in the last line of our successful code
     filter_matched(event)
   end # def filter
-end # class LogStash::Filters::Example
+end # class LogStash::Filters::Referer
